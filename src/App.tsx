@@ -6,10 +6,12 @@ import Toolbar from './components/Toolbar';
 import SheetTabs from './components/SheetTabs';
 import AdminPanel from './components/AdminPanel';
 import UserSelector from './components/UserSelector';
+import ImportGoogleSheet from './components/ImportGoogleSheet';
 
 export default function App() {
   const [state, setState] = useState<AppState>(loadState);
   const [showAdmin, setShowAdmin] = useState(false);
+  const [showImport, setShowImport] = useState(false);
   const [selectedCellKey, setSelectedCellKey] = useState<string | null>(null);
 
   // Save state on every change
@@ -192,6 +194,29 @@ export default function App() {
     setState(prev => ({ ...prev, settings }));
   }, []);
 
+  // Import from Google Sheets
+  const handleImportGoogleSheet = useCallback((data: string[][]) => {
+    if (isReadOnly) return;
+    setState(prev => {
+      const newCells: Record<string, CellData> = {};
+      data.forEach((row, rowIdx) => {
+        row.forEach((cell, colIdx) => {
+          if (cell) {
+            newCells[getCellKey(rowIdx, colIdx)] = { value: cell };
+          }
+        });
+      });
+      return {
+        ...prev,
+        sheets: prev.sheets.map(sheet =>
+          sheet.id === prev.activeSheetId
+            ? { ...sheet, cells: newCells }
+            : sheet
+        ),
+      };
+    });
+  }, [isReadOnly]);
+
   // Track selected cell from spreadsheet
   const handleSpreadsheetCellClick = useCallback((row: number, col: number) => {
     setSelectedCellKey(getCellKey(row, col));
@@ -244,6 +269,17 @@ export default function App() {
               <span className="text-xs bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded">Admin</span>
             )}
           </div>
+
+          {/* Import button */}
+          {!isReadOnly && (
+            <button
+              onClick={() => setShowImport(true)}
+              className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium shadow-sm"
+              title="Импорт из Google Таблиц"
+            >
+              📥 Импорт
+            </button>
+          )}
 
           {/* Admin button */}
           {state.currentUser.role === 'admin' && (
@@ -340,6 +376,14 @@ export default function App() {
           onDeleteUser={handleDeleteUser}
           onUpdateSettings={handleUpdateSettings}
           onClose={() => setShowAdmin(false)}
+        />
+      )}
+
+      {/* Import Google Sheet Modal */}
+      {showImport && !isReadOnly && (
+        <ImportGoogleSheet
+          onImport={handleImportGoogleSheet}
+          onClose={() => setShowImport(false)}
         />
       )}
     </div>

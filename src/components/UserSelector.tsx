@@ -25,7 +25,7 @@ export default function UserSelector({ users, onSelectUser, appName }: UserSelec
             <span className="text-3xl">📊</span>
           </div>
           <h1 className="text-2xl font-bold text-gray-800">{appName}</h1>
-          <p className="text-sm text-gray-500 mt-1">Локальная таблица для совместной работы</p>
+          <p className="text-sm text-gray-500 mt-1">Таблица для совместной работы в локальной сети</p>
         </div>
 
         <div className="space-y-4">
