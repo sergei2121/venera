@@ -1,1 +1,45 @@
 @import "tailwindcss";
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* Cell transitions */
+.cell {
+  transition: background-color 0.1s ease;
+}
+
+.cell:hover {
+  background-color: rgba(66, 133, 244, 0.04);
+}
+
+/* Prevent text selection during resize */
+.cursor-col-resize {
+  user-select: none;
+}
+
+/* Smooth animations */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fix for sticky headers */
+.sticky {
+  position: sticky;
+}
