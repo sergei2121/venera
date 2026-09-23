@@ -49,13 +49,49 @@ export default function ImportGoogleSheet({ onImport, onClose }: ImportGoogleShe
     }
   };
 
+  // Функция для создания URL новой Google Таблицы с предзаполненными данными
+  const handleExportToGoogleSheets = async () => {
+    setError(null);
+    if (!url.trim()) {
+      setError('Введите ссылку на существующую Google Таблицу для экспорта');
+      return;
+    }
+
+    const sheetId = extractGoogleSheetId(url);
+    if (!sheetId) {
+      setError('Не удалось распознать ссылку на Google Таблицу');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Получаем текущие данные из таблицы для проверки формата
+      const currentData = await fetchGoogleSheet(url);
+      
+      // Генерируем CSV для копирования
+      const csvContent = preview 
+        ? preview.map(row => row.map(cell => `"${cell.replace(/"/g, '""')}"`).join(',')).join('\n')
+        : '';
+      
+      // Открываем Google Таблицу в новой вкладке
+      const googleSheetsUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
+      window.open(googleSheetsUrl, '_blank');
+      
+      alert('Google Таблица открыта в новой вкладке.\n\nСкопируйте данные из текущего листа и вставьте их в opened таблицу (Ctrl+V).\n\nИли используйте кнопку "Импортировать" для загрузки данных из этой таблицы.');
+    } catch (err: any) {
+      setError(err.message || 'Ошибка при подготовке экспорта');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-green-50 to-emerald-50">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            📥 Импорт из Google Таблиц
+            📥 Импорт / 📤 Экспорт Google Таблиц
           </h2>
           <button
             onClick={onClose}
@@ -109,12 +145,21 @@ export default function ImportGoogleSheet({ onImport, onClose }: ImportGoogleShe
                 <h3 className="text-sm font-semibold text-gray-700">
                   Предпросмотр ({preview.length} строк × {Math.max(...preview.map(r => r.length))} столбцов)
                 </h3>
-                <button
-                  onClick={handleImport}
-                  className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                >
-                  ✅ Импортировать
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleExportToGoogleSheets}
+                    className="px-4 py-2 bg-purple-600 text-white text-sm rounded-lg hover:bg-purple-700 transition-colors font-medium"
+                    title="Открыть Google Таблицу для вставки данных"
+                  >
+                    📤 Экспорт
+                  </button>
+                  <button
+                    onClick={handleImport}
+                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    ✅ Импортировать
+                  </button>
+                </div>
               </div>
               <div className="border border-gray-200 rounded-lg overflow-auto max-h-80">
                 <table className="w-full text-xs">
